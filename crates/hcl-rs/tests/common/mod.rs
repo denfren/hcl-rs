@@ -50,7 +50,7 @@ where
 }
 
 #[track_caller]
-pub fn assert_eval_ctx<T, U>(ctx: &Context, value: T, expected: U)
+pub fn assert_eval_ctx<T, U>(ctx: &Context, value: &T, expected: U)
 where
     T: Evaluate<Output = U> + Debug + PartialEq,
     U: Debug + PartialEq,

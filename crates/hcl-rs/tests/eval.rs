@@ -8,7 +8,7 @@ use hcl::expr::{
 };
 use hcl::structure::Body;
 use hcl::template::Template;
-use hcl::{Identifier, Number, Value};
+use hcl::{Attribute, Block, Identifier, Number, Value};
 use indoc::indoc;
 
 #[test]
@@ -312,11 +312,35 @@ fn eval_func_call() {
 
     assert_eval_ctx(
         &ctx,
-        FuncCall::builder("add")
+        &FuncCall::builder("add")
             .arg(FuncCall::builder("strlen").arg("foo").build())
             .arg(2)
             .build(),
         Value::from(5),
+    )
+}
+
+#[test]
+fn eval_traversal_ctx() {
+    let body = hcl::parse(r#"
+    foo "bar" {
+        value = 42
+    }
+    attribute = foo.bar.value
+    "#).unwrap();
+    let mut ctx = Context::new();
+    ctx.blocks = body.blocks().collect();
+
+    assert_eval_ctx(
+        &ctx,
+        &body,
+        Body::builder()
+            .add_block(Block::builder("foo")
+                .add_label("bar")
+                .add_attribute(Attribute::new("value", Expression::Number(Number::from(42))))
+                .build())
+            .add_attribute(Attribute::new("attribute", Expression::Number(Number::from(42))))
+            .build(),
     )
 }
 
@@ -329,7 +353,7 @@ fn eval_template() {
 
     assert_eval_ctx(
         &ctx,
-        Template::from_str("Hello, ${name ~} !").unwrap(),
+        &Template::from_str("Hello, ${name ~} !").unwrap(),
         String::from("Hello, World!"),
     );
 
@@ -360,7 +384,7 @@ fn eval_template() {
 
     assert_eval_ctx(
         &ctx,
-        Template::from_str(template_str).unwrap(),
+        &Template::from_str(template_str).unwrap(),
         expected.to_owned(),
     );
 }
@@ -410,7 +434,7 @@ fn interpolation_unwrapping() {
 
     let mut ctx = Context::new();
     ctx.declare_var("var", true);
-    assert_eval_ctx(&ctx, TemplateExpr::from("${\"${var}\"}"), Value::Bool(true));
+    assert_eval_ctx(&ctx, &TemplateExpr::from("${\"${var}\"}"), Value::Bool(true));
 
     // no unwrapping
     assert_eval(

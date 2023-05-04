@@ -260,8 +260,76 @@ pub trait Evaluate: private::Sealed {
 pub struct Context<'a> {
     vars: Map<Identifier, Value>,
     funcs: Map<Identifier, FuncDef>,
+    body: Option<&'a Body>,
+    pub blocks: Vec<&'a Block>,
     parent: Option<&'a Context<'a>>,
     expr: Option<&'a Expression>,
+}
+
+impl<'a> Context<'a> {
+    // Check if we are targeting an existing block
+    pub(crate) fn traversal_ctx(
+        &'a self,
+        traversal: &Traversal,
+    ) -> Option<(Context<'a>, Traversal)> {
+        if self.blocks.is_empty() {
+            if let Some(parent) = self.parent {
+                return parent.traversal_ctx(traversal);
+            }
+
+            return None;
+        }
+
+        let Expression::Variable(var) = &traversal.expr else {
+            return None;
+        };
+
+        // Gather list of possible identifiers to identify a block
+        let mut names = vec![var.clone().into_inner()];
+        names.extend(traversal.operators.iter().map_while(|t| match t {
+            TraversalOperator::GetAttr(ident) => Some(ident.clone()),
+            _ => None,
+        }));
+
+        // Find block that matches identifier
+        for block in &self.blocks {
+            if block.labels.len() > traversal.operators.len() {
+                continue;
+            }
+
+            if block.identifier == names[0] {
+                let all_labels_match = block
+                    .labels
+                    .iter()
+                    .zip(names.iter().skip(1))
+                    .all(|(label, ident)| label.as_str() == ident.as_str());
+                if all_labels_match {
+                    // Construct context that contains child blocks
+                    let mut ctx = self.child();
+                    ctx.body = Some(&block.body);
+                    ctx.blocks = block.body.blocks().collect();
+
+                    // Re-construct traversal so that it contains only the tail
+                    let mut new_traversal = traversal.clone();
+                    let new_expr = new_traversal
+                        .operators
+                        .drain(0..=block.labels.len())
+                        .last()
+                        .unwrap();
+                    match new_expr {
+                        TraversalOperator::GetAttr(ident) => {
+                            new_traversal.expr = Expression::Variable(ident.into());
+                        }
+                        // If the next is not an attribute, then we can not transform
+                        _ => return None,
+                    }
+                    return Some((ctx, new_traversal));
+                }
+            }
+        }
+
+        None
+    }
 }
 
 impl Default for Context<'_> {
@@ -269,6 +337,8 @@ impl Default for Context<'_> {
         Context {
             vars: Map::new(),
             funcs: Map::new(),
+            body: None,
+            blocks: Vec::new(),
             parent: None,
             expr: None,
         }
@@ -350,7 +420,7 @@ impl<'a> Context<'a> {
     ///
     /// When the variable is declared in multiple parent scopes, the innermost variable's value is
     /// returned.
-    fn lookup_var(&self, name: &Identifier) -> EvalResult<&Value> {
+    fn lookup_var(&self, name: &Identifier) -> EvalResult<Value> {
         self.var(name)
             .ok_or_else(|| self.error(ErrorKind::UndefinedVar(name.clone())))
     }
@@ -377,9 +447,17 @@ impl<'a> Context<'a> {
         }
     }
 
-    fn var(&self, name: &Identifier) -> Option<&Value> {
+    fn var(&self, name: &Identifier) -> Option<Value> {
         self.vars
             .get(name)
+            .cloned()
+            .or_else(|| {
+                self.body.and_then(|body| {
+                    body.attributes().find_map(|attribute| {
+                        (&attribute.key == name).then(|| attribute.expr.evaluate(self).ok())
+                    }).flatten()
+                })
+            })
             .or_else(|| self.parent.and_then(|parent| parent.var(name)))
     }
 

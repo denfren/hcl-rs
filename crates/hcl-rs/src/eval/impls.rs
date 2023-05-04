@@ -65,7 +65,7 @@ impl Evaluate for Expression {
             Expression::Array(array) => array.evaluate(ctx).map(Value::Array),
             Expression::Object(object) => object.evaluate(ctx).map(Value::Object),
             Expression::TemplateExpr(expr) => expr.evaluate(ctx),
-            Expression::Variable(ident) => ctx.lookup_var(ident).cloned(),
+            Expression::Variable(ident) => ctx.lookup_var(ident),
             Expression::Traversal(traversal) => traversal.evaluate(ctx),
             Expression::FuncCall(func_call) => func_call.evaluate(ctx),
             Expression::Parenthesis(expr) => expr.evaluate(ctx),
@@ -167,6 +167,11 @@ impl Evaluate for Traversal {
     type Output = Value;
 
     fn evaluate(&self, ctx: &Context) -> EvalResult<Self::Output> {
+        // Let the traversal introduce a new context if a matching block exists
+        if let Some((ctx, traversal)) = ctx.traversal_ctx(self) {
+            return traversal.evaluate(&ctx);
+        }
+
         let value = self.expr.evaluate(ctx)?;
         let deque = self.operators.iter().collect();
         expr::evaluate_traversal(value, deque, ctx)
