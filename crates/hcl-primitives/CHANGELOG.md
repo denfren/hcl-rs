@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.0](https://github.com/denfren/hcl-rs/compare/hcl-primitives-v0.1.1...hcl-primitives-v0.2.0) (2023-07-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **ident:** `Ident::new` now returns `Ident` instead of `Result<Ident, Error>` and will panic if an invalid identifier is encountered. Use `Ident::try_new` instead to get the old behaviour.
+* **eval:** the `Evaluate` implementation of `TemplateExpr` returns a `Value` instead of a `String` now to support interpolation unwrapping.
+
+### Features
+
+* add `hcl-primitives` crate ([#178](https://github.com/denfren/hcl-rs/issues/178)) ([200a16f](https://github.com/denfren/hcl-rs/commit/200a16f8d0299b50e24b3e8808e17547eef8bb2b))
+* **ident:** add `Ident::try_new` ([#210](https://github.com/denfren/hcl-rs/issues/210)) ([4c15e1e](https://github.com/denfren/hcl-rs/commit/4c15e1e5b6eb7aedadef75da6a7fb11d5c9e8ec3))
+* implement `From` for `Cow&lt;str&gt;` <-> `InternalString` ([e352a5a](https://github.com/denfren/hcl-rs/commit/e352a5ac0f0eb915b0d29cc44ec2c36f5d2d9c59))
+* move `Strip`, `BinaryOperator` and `UnaryOperator` type defs ([20a8366](https://github.com/denfren/hcl-rs/commit/20a8366447e5f8673562cf37b9dda6bc8ffc6295))
+* **template:** add `{escape,unescape}_markers` ([#245](https://github.com/denfren/hcl-rs/issues/245)) ([5e51771](https://github.com/denfren/hcl-rs/commit/5e517713e9ba001306e2574fbbe1271bcfe1adda))
+
+
+### Bug Fixes
+
+* **eval:** correctly handle interpolation unwrapping ([85bed59](https://github.com/denfren/hcl-rs/commit/85bed59d3a5b37542bd0daaa577e1c07cc12ac7a))
+* **ident:** make `Ident::new` panic on invalid identifier ([#212](https://github.com/denfren/hcl-rs/issues/212)) ([bf8467a](https://github.com/denfren/hcl-rs/commit/bf8467ab759a78f43b9be3bc665bd29d46aa0baa))
+
 ## [0.1.1](https://github.com/martinohmann/hcl-rs/compare/hcl-primitives-v0.1.0...hcl-primitives-v0.1.1) (2023-06-15)
 
 
