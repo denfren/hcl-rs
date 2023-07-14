@@ -12,6 +12,53 @@
   * dependencies
     * hcl-edit bumped from 0.7.0 to 0.7.1
 
+## [0.17.0](https://github.com/denfren/hcl-rs/compare/hcl-rs-v0.16.1...hcl-rs-v0.17.0) (2023-07-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **error:** The variants `Eof`, `InvalidEscape`, `InvalidUnicodeCodePoint` and `InvalidIdentifier` were removed from the `Error` enum because they are not emitted anymore.
+* **parser:** switch to `hcl-edit` for parsing HCL ([#267](https://github.com/denfren/hcl-rs/issues/267))
+* **expr:** `Expression::Template` was renamed to `Expression::StringTemplate`. Furthermore, the `Expression` type's methods `is_template` and `as_template` were renamed to `is_string_template` and `as_string_template` respectively.
+* remove methods and type aliases deprecated in 0.9.0 and 0.9.1
+* **eval:** the `Evaluate` implementation of `TemplateExpr` returns a `Value` instead of a `String` now to support interpolation unwrapping.
+
+### Features
+
+* add `hcl-primitives` crate ([#178](https://github.com/denfren/hcl-rs/issues/178)) ([200a16f](https://github.com/denfren/hcl-rs/commit/200a16f8d0299b50e24b3e8808e17547eef8bb2b))
+* **ident:** add `Ident::try_new` ([#210](https://github.com/denfren/hcl-rs/issues/210)) ([4c15e1e](https://github.com/denfren/hcl-rs/commit/4c15e1e5b6eb7aedadef75da6a7fb11d5c9e8ec3))
+* interop with `hcl-edit` types ([#255](https://github.com/denfren/hcl-rs/issues/255)) ([726e6e9](https://github.com/denfren/hcl-rs/commit/726e6e9426b2112ba0ab8fd4d7cd12a8150eaf4b))
+* move `Strip`, `BinaryOperator` and `UnaryOperator` type defs ([20a8366](https://github.com/denfren/hcl-rs/commit/20a8366447e5f8673562cf37b9dda6bc8ffc6295))
+
+
+### Bug Fixes
+
+* **error:** remove obsolete `Error` variants ([af9996a](https://github.com/denfren/hcl-rs/commit/af9996a709c4c7faeb0ad88318d0bba3b0ca0e2f))
+* **eval:** correctly handle interpolation unwrapping ([85bed59](https://github.com/denfren/hcl-rs/commit/85bed59d3a5b37542bd0daaa577e1c07cc12ac7a))
+* **expr:** remove unnecessary unescaping ([8001e5e](https://github.com/denfren/hcl-rs/commit/8001e5ebba12974c93738726c91ba6e57a2180c3))
+* **expr:** rename string template enum variant ([119be53](https://github.com/denfren/hcl-rs/commit/119be534972d2e50d586f4d671c5316fa7cdcb5d))
+* **format:** do not unescape heredoc strings ([#171](https://github.com/denfren/hcl-rs/issues/171)) ([c2b37ec](https://github.com/denfren/hcl-rs/commit/c2b37ec29539bc51e3503f902e0e46ad57e2264c))
+* **string:** properly handle escaping of interpolation/directive marker ([#249](https://github.com/denfren/hcl-rs/issues/249)) ([e0c86f1](https://github.com/denfren/hcl-rs/commit/e0c86f16e88b1ca71672b938d15b21b99ee911f9))
+* **template:** properly handle escaping of interpolation/directive markers ([#247](https://github.com/denfren/hcl-rs/issues/247)) ([69ad800](https://github.com/denfren/hcl-rs/commit/69ad8007e6d331b8f915b6e98de3fe4b8ef16239))
+
+
+### Miscellaneous Chores
+
+* remove methods and type aliases deprecated in 0.9.0 and 0.9.1 ([db24593](https://github.com/denfren/hcl-rs/commit/db245934ca38d0dd3c0e12f3781192b43d49cb7a))
+
+
+### Code Refactoring
+
+* **parser:** switch to `hcl-edit` for parsing HCL ([#267](https://github.com/denfren/hcl-rs/issues/267)) ([c6d0588](https://github.com/denfren/hcl-rs/commit/c6d0588cd24c1a7dcd722b3d45b97d82fb77d0c2))
+
+
+### Dependencies
+
+* The following workspace dependencies were updated
+  * dependencies
+    * hcl-edit bumped from 0.7.1 to 0.8.0
+    * hcl-primitives bumped from 0.1.1 to 0.2.0
+
 ## [0.16.0](https://github.com/martinohmann/hcl-rs/compare/hcl-rs-v0.15.0...hcl-rs-v0.16.0) (2023-07-13)
 
 
